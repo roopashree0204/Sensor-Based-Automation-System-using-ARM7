@@ -1,0 +1,99 @@
+ #include <LPC214X.H>
+ #include <stdio.h>
+ #define SENSOR_PIN (1 << 5)
+#define BUZZER_PIN (1 << 10)
+ #define MOTOR_PIN1 (1 << 8)
+ #define MOTOR_PIN2 (1 << 9)
+ #define STEPPER_PIN1 (1 << 12)
+ #define STEPPER_PIN2 (1 << 13)
+ #define STEPPER_PIN3 (1 << 14)
+ #define STEPPER_PIN4 (1 << 15)
+ // Utility to set stepper motor pins
+ #define STEPPER_PINS (STEPPER_PIN1 | STEPPER_PIN2 |
+ STEPPER_PIN3 | STEPPER_PIN4)
+ void LEDBLINK(void) {
+ IO0SET = 0X000F0000;
+ }
+ void stop() {
+ IO0PIN = 0X00000000;
+ }
+ void delay_ms(unsigned int ms) {
+ unsigned int i, j;
+ for (i = 0; i < ms; i++)
+ for (j = 0; j < 1000; j++); // Adjust this loop based on your clock
+ frequency
+ }
+void motor_on() {
+ IO0SET = MOTOR_PIN1; // Set P0.8
+ IO0CLR = MOTOR_PIN2; // Clear P0.9 to rotate clockwise
+ }
+ void motor_off() {
+ IO0CLR = MOTOR_PIN1 | MOTOR_PIN2; // Clear both pins to stop the
+ motor
+ }
+ void motor_reverse() {
+ IO0CLR = MOTOR_PIN1; // Clear P0.8
+ IO0SET = MOTOR_PIN2; // Set P0.9 to rotate counterclockwise
+ }
+ void stepper_step(int step) {
+ IO0CLR = STEPPER_PINS; // Clear all stepper pins
+ switch (step) {
+ case 0: IO0SET = STEPPER_PIN1; break;
+ // 1000
+ case 1: IO0SET = STEPPER_PIN1 | STEPPER_PIN2; break;
+ 1100
+ case 2: IO0SET = STEPPER_PIN2; break;
+ // 0100
+ case 3: IO0SET = STEPPER_PIN2 | STEPPER_PIN3; break;
+ 0110
+ case 4: IO0SET = STEPPER_PIN3; break;
+ // 0010
+ case 5: IO0SET = STEPPER_PIN3 | STEPPER_PIN4; break;
+ //
+ //
+ //
+0011
+ case 6: IO0SET = STEPPER_PIN4; break;
+ // 0001
+ case 7: IO0SET = STEPPER_PIN4 | STEPPER_PIN1; break;
+ 1001
+ }
+ }
+ void stepper_rotate(int steps, int direction) {
+ for (int i = 0; i < steps; i++) {
+ int step = direction ? i % 8 : (7- i % 8);
+ stepper_step(step);
+ delay_ms(10); // Adjust the delay for the speed of the stepper
+ motor
+ }
+ }
+ int main() {
+ PINSEL0 = 0X00000000;
+ IO0DIR = 0X000F0000;
+ IO0DIR |= BUZZER_PIN | MOTOR_PIN1 | MOTOR_PIN2 |
+ STEPPER_PINS;
+ while(1) {
+ if(!(IO0PIN & SENSOR_PIN)) {
+ LEDBLINK();
+ IO0SET = BUZZER_PIN; // Turn on the buzzer
+ motor_on(); // Turn on the DC motor
+ //
+delay_ms(2000); // Delay for 2 seconds
+ IO0CLR = BUZZER_PIN; // Turn off the buzzer
+ motor_off(); // Turn off the DC motor
+ delay_ms(20000); // Wait for 20 seconds
+ stepper_rotate(200, 1); // Rotate stepper 360 degrees clockwise
+ (assuming 200 steps for full rotation)
+ delay_ms(20000); // Wait for 20 seconds
+ motor_on(); // Turn on the DC motor clockwise
+ delay_ms(2000); // Delay for 2 seconds
+ motor_off(); // Turn off the DC motor
+ delay_ms(20000); // Wait for 20 seconds
+ stepper_rotate(200, 0); // Rotate stepper 360 degrees
+ counterclockwise
+ } else {
+ stop();
+ }
+ }
+ }
+
