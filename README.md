@@ -40,8 +40,6 @@ When an object is detected, the LPC2148 activates the buzzer and LEDs, operates 
 
 ## Implementation
 
-![Hardware implementation](hardware.jpg)
-
 The system was implemented on an ARM7 LPC2148 evaluation board and demonstrated the integration of sensors, indicators, and motor control.
 
 ## Result
